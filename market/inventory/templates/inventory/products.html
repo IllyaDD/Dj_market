@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<form class="d-flex">
+    <input class="form-control me-2" name="name" type="search" placeholder="Search" aria-label="Search">
+    <button class="btn btn-outline-success" type="submit">Search</button>
+</form>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Name</th>
+      <th scope="col">Price per unit</th>
+      <th scope="col">Unit of measurement</th>
+      <th scope="col">Quantity</th>
+      <th scope="col">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for product in products %}
+    <tr>
+      <th scope="row">{{ forloop.counter }}</th>
+      <td><a href="{% url 'inventory:edit_product' product.pk %}">{{ product.name }}</a></td>
+      <td>{{ product.unit_price }}</td>
+      <td>{{ product.unit }}</td>
+      <td>{{ product.quantity }}</td>
+      <td>
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'inventory:edit_product' product.pk %}">Edit</a>
+        <form method="post" action="{% url 'inventory:delete_product' product.pk %}" style="display:inline">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm btn-danger ms-1" onclick="return confirm('Delete this product?')">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock content %}

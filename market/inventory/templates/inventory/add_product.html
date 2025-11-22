@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<h1>{% if title %}{{ title }}{% else %}Add a Product{% endif %}</h1>
+<form method="POST">
+  {% csrf_token %}
+  {{ form|crispy }}
+  <button type="submit" class="btn btn-primary w-25">{% if submit_label %}{{ submit_label }}{% else %}Add{% endif %}</button>
+</form>
+{% endblock %}
