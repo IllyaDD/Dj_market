@@ -3,12 +3,32 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import ProductForm
 from .models import Product
-
+from .filters import ProductFilter
 
 def products_view(request):
     products = Product.objects.all()
-    return render(request, 'inventory/products.html', {'products': products})
+    product_filter = ProductFilter(request.GET, queryset=products)
+    products = product_filter.qs
+    # Add widget attributes on the form fields so template rendering is simple
+    try:
+        f = product_filter.form
+        if 'name' in f.fields:
+            f.fields['name'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Search name'})
+        if 'unit' in f.fields:
+            f.fields['unit'].widget.attrs.update({'class': 'form-select'})
+        if 'min_price' in f.fields:
+            f.fields['min_price'].widget.attrs.update({'class': 'form-control form-control-sm', 'id': 'id_min_price', 'step': '0.01'})
+        if 'max_price' in f.fields:
+            f.fields['max_price'].widget.attrs.update({'class': 'form-control form-control-sm', 'id': 'id_max_price', 'step': '0.01'})
+        if 'min_quantity' in f.fields:
+            f.fields['min_quantity'].widget.attrs.update({'class': 'form-control form-control-sm', 'id': 'id_min_quantity', 'step': '0.01'})
+        if 'max_quantity' in f.fields:
+            f.fields['max_quantity'].widget.attrs.update({'class': 'form-control form-control-sm', 'id': 'id_max_quantity', 'step': '0.01'})
+    except Exception:
+        # defensive: if something unexpected, continue without modifying widgets
+        pass
 
+    return render(request, 'inventory/products.html', {'products': products, 'filter': product_filter})
 
 @login_required
 def add_product_view(request):

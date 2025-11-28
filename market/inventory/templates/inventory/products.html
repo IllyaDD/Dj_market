@@ -1,10 +1,104 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<form class="d-flex">
-    <input class="form-control me-2" name="name" type="search" placeholder="Search" aria-label="Search">
-    <button class="btn btn-outline-success" type="submit">Search</button>
+<form method="get" class="mb-3 d-flex align-items-center gap-2">
+  <div style="min-width:220px;">
+    {{ filter.form.name }}
+  </div>
+
+  <div class="dropdown">
+    <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filtersDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+      Filters
+    </button>
+    <div class="dropdown-menu p-3" aria-labelledby="filtersDropdown" style="min-width:320px;">
+      <div class="mb-2">
+        <label class="form-label small mb-1">Unit</label>
+        {{ filter.form.unit }}
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label small mb-1">Price</label>
+        <div class="d-flex align-items-center gap-2">
+          <div class="d-flex flex-column" style="min-width:90px;">
+            <small class="text-muted">Min</small>
+            {{ filter.form.min_price }}
+          </div>
+          <div id="min_price_range_wrap" class="d-flex align-items-center">
+            <input id="min_price_range" type="range" min="0" max="10000" step="0.01" class="form-range" style="width:140px;" />
+          </div>
+          <div class="d-flex flex-column" style="min-width:90px;">
+            <small class="text-muted">Max</small>
+            {{ filter.form.max_price }}
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label small mb-1">Quantity</label>
+        <div class="d-flex align-items-center gap-2">
+          <div class="d-flex flex-column" style="min-width:90px;">
+            <small class="text-muted">Min</small>
+            {{ filter.form.min_quantity }}
+          </div>
+          <div id="min_quantity_range_wrap" class="d-flex align-items-center">
+            <input id="min_quantity_range" type="range" min="0" max="10000" step="0.01" class="form-range" style="width:140px;" />
+          </div>
+          <div class="d-flex flex-column" style="min-width:90px;">
+            <small class="text-muted">Max</small>
+            {{ filter.form.max_quantity }}
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end">
+        <button class="btn btn-sm btn-outline-success me-2" type="submit">Apply</button>
+        <a class="btn btn-sm btn-secondary" href="?">Reset</a>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btn-outline-success" type="submit">Apply</button>
+  <a class="btn btn-secondary" href="?">Reset</a>
 </form>
+
+<script>
+// Sync range sliders with number inputs and initialize from current values
+function syncRange(rangeEl, numberEl) {
+  if (!rangeEl || !numberEl) return;
+  // initialize range from number value if present
+  const n = parseFloat(numberEl.value);
+  if (!isNaN(n)) rangeEl.value = n;
+  // update number when moving range
+  rangeEl.addEventListener('input', function() { numberEl.value = this.value; });
+  // update range when number input changes
+  numberEl.addEventListener('input', function() { rangeEl.value = this.value || rangeEl.min; });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  syncRange(document.getElementById('min_price_range'), document.getElementById('id_min_price'));
+  syncRange(document.getElementById('min_quantity_range'), document.getElementById('id_min_quantity'));
+  // Hide slider if the number input already has a value; show when cleared
+  function toggleSliderVisibility(numberEl, sliderWrap) {
+    if (!numberEl || !sliderWrap) return;
+    const check = () => {
+      if (numberEl.value && String(numberEl.value).trim() !== '') {
+        sliderWrap.style.display = 'none';
+      } else {
+        sliderWrap.style.display = '';
+      }
+    };
+    // initial
+    check();
+    // update on user input
+    numberEl.addEventListener('input', check);
+  }
+
+  toggleSliderVisibility(document.getElementById('id_min_price'), document.getElementById('min_price_range_wrap'));
+  toggleSliderVisibility(document.getElementById('id_max_price'), document.getElementById('min_price_range_wrap'));
+  toggleSliderVisibility(document.getElementById('id_min_quantity'), document.getElementById('min_quantity_range_wrap'));
+  toggleSliderVisibility(document.getElementById('id_max_quantity'), document.getElementById('min_quantity_range_wrap'));
+});
+</script>
 <table class="table table-striped">
   <thead>
     <tr>
