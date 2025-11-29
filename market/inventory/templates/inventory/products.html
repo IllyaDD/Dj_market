@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
     {% for product in products %}
     <tr>
       <th scope="row">{{ forloop.counter }}</th>
-      <td><a href="{% url 'inventory:edit_product' product.pk %}">{{ product.name }}</a></td>
+      <td><a href="{% url 'inventory:product_detail' product.pk %}">{{ product.name }}</a></td>
       <td>{{ product.unit_price }}</td>
       <td>{{ product.unit }}</td>
       <td>{{ product.quantity }}</td>

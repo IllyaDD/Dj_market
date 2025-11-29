@@ -140,3 +140,11 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 # Use custom user model defined in `users` app
 AUTH_USER_MODEL = "users.CustomUser"
+
+# Authentication redirects
+# URL to redirect users to for login (used by @login_required and auth views)
+LOGIN_URL = '/users/login/'
+# After successful login, redirect here (was default '/accounts/profile/')
+LOGIN_REDIRECT_URL = '/users/profile/'
+# After logout, redirect to home
+LOGOUT_REDIRECT_URL = '/'
