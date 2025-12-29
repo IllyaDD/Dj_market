@@ -11,4 +11,5 @@ dependencies = [
     "django-filter>=25.2",
     "psycopg2>=2.9.11",
     "python-decouple>=3.8",
+    "python-dotenv>=1.2.1",
 ]

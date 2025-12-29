@@ -3,6 +3,7 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from .forms import RegistrationForm, CustomUserForm
+from django.utils import timezone
 
 
 def register_view(request):
@@ -13,7 +14,9 @@ def register_view(request):
             user = form.save(commit=False)
             user.is_active = True
             user.save()
-            return redirect('inventory:products')
+            response = redirect('inventory:products')
+            response.set_cookie('registration_time', timezone.now().isoformat(), max_age=10*365*24*60*60)
+            return response
     return render(request, 'users/register.html', {'form': form})
 
 
@@ -28,4 +31,13 @@ def profile_view(request):
             messages.error(request, 'Please correct errors')
     else:
         form = CustomUserForm(instance=request.user)
-    return render(request, 'users/profile.html', {'form': form})
+    reg_cookie = request.COOKIES.get('registration_time')
+    registered_at = None
+    if reg_cookie:
+        try:
+            from datetime import datetime
+            registered_at = datetime.fromisoformat(reg_cookie)
+        except Exception:
+            registered_at = reg_cookie
+
+    return render(request, 'users/profile.html', {'form': form, 'registered_at': registered_at})

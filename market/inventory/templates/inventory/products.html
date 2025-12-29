@@ -62,22 +62,21 @@
 </form>
 
 <script>
-// Sync range sliders with number inputs and initialize from current values
+
 function syncRange(rangeEl, numberEl) {
   if (!rangeEl || !numberEl) return;
-  // initialize range from number value if present
+
   const n = parseFloat(numberEl.value);
   if (!isNaN(n)) rangeEl.value = n;
-  // update number when moving range
+
   rangeEl.addEventListener('input', function() { numberEl.value = this.value; });
-  // update range when number input changes
+
   numberEl.addEventListener('input', function() { rangeEl.value = this.value || rangeEl.min; });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
   syncRange(document.getElementById('min_price_range'), document.getElementById('id_min_price'));
   syncRange(document.getElementById('min_quantity_range'), document.getElementById('id_min_quantity'));
-  // Hide slider if the number input already has a value; show when cleared
   function toggleSliderVisibility(numberEl, sliderWrap) {
     if (!numberEl || !sliderWrap) return;
     const check = () => {
@@ -87,9 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
         sliderWrap.style.display = '';
       }
     };
-    // initial
     check();
-    // update on user input
     numberEl.addEventListener('input', check);
   }
 
@@ -102,12 +99,13 @@ document.addEventListener('DOMContentLoaded', function() {
 <table class="table table-striped">
   <thead>
     <tr>
-      <th scope="col">#</th>
-      <th scope="col">Name</th>
-      <th scope="col">Price per unit</th>
-      <th scope="col">Unit of measurement</th>
-      <th scope="col">Quantity</th>
-      <th scope="col">Actions</th>
+      <th scope="col" class="text-start">#</th>
+      <th scope="col" class="text-start">Name</th>
+      <th scope="col" class="text-start">Price per unit</th>
+      <th scope="col" class="text-start">Quantity</th>
+      <th scope="col" class="text-start">Unit of measurement</th>
+      <th scope="col" class="text-start">Rating</th>
+      <th scope="col" class="text-start">Actions</th>
     </tr>
   </thead>
   <tbody>
@@ -116,9 +114,20 @@ document.addEventListener('DOMContentLoaded', function() {
       <th scope="row">{{ forloop.counter }}</th>
       <td><a href="{% url 'inventory:product_detail' product.pk %}">{{ product.name }}</a></td>
       <td>{{ product.unit_price }}</td>
-      <td>{{ product.unit }}</td>
       <td>{{ product.quantity }}</td>
+      <td>{{ product.unit }}</td>
       <td>
+          {% if product.has_rating %}
+            {% for i in "x"|rjust:product.rating_count %}⭐️{% endfor %}
+            <small>({{ product.avg_rating }}/5)</small>
+          {% else %}
+            <small>No ratings</small>
+          {% endif %}
+      </td>
+      <td>
+        {% if request.user.is_authenticated %}
+        <a class="btn btn-sm btn-success" href="{% url 'inventory:add_to_cart' product.pk %}">Add to Cart</a>
+        {% endif %}
         <a class="btn btn-sm btn-outline-primary" href="{% url 'inventory:edit_product' product.pk %}">Edit</a>
         <form method="post" action="{% url 'inventory:delete_product' product.pk %}" style="display:inline">
           {% csrf_token %}
@@ -129,4 +138,62 @@ document.addEventListener('DOMContentLoaded', function() {
     {% endfor %}
   </tbody>
 </table>
+
+<!-- Pagination -->
+{% if products.has_other_pages %}
+<nav aria-label="Page navigation" class="mt-4">
+  <ul class="pagination justify-content-center">
+    <!-- Previous button -->
+    {% if products.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">First</a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ products.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; Previous</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">First</span>
+      </li>
+      <li class="page-item disabled">
+        <span class="page-link">&laquo; Previous</span>
+      </li>
+    {% endif %}
+
+    <!-- Page numbers -->
+    {% for page_num in page_numbers %}
+      {% if page_num == "..." %}
+        <li class="page-item disabled">
+          <span class="page-link">...</span>
+        </li>
+      {% elif page_num == products.number %}
+        <li class="page-item active">
+          <span class="page-link">{{ page_num }}</span>
+        </li>
+      {% else %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ page_num }}</a>
+        </li>
+      {% endif %}
+    {% endfor %}
+
+    <!-- Next button -->
+    {% if products.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ products.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next &raquo;</a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ products.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">Next &raquo;</span>
+      </li>
+      <li class="page-item disabled">
+        <span class="page-link">Last</span>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
 {% endblock content %}

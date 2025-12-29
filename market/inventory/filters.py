@@ -10,6 +10,3 @@ class ProductFilter(django_filters.FilterSet):
     min_quantity = django_filters.NumberFilter(field_name='quantity', lookup_expr='gte', label='Min quantity')
     max_quantity = django_filters.NumberFilter(field_name='quantity', lookup_expr='lte', label='Max quantity')
 
-    class Meta:
-        model = Product
-        fields = ['name', 'unit', 'min_price', 'max_price', 'min_quantity', 'max_quantity']
