@@ -2,12 +2,10 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import ProductForm
-from .models import Product, Cart
+from .models import Product, Cart, Rating
 from .filters import ProductFilter
 from django.core.paginator import Paginator
 from django.db.models import Avg
-from django.core.mail import send_mail
-from django.conf import settings
 import logging
 
 logger = logging.getLogger(__name__)
@@ -138,27 +136,6 @@ def add_to_cart_view(request, pk):
         cart_item.quantity += 1
         cart_item.save()
     messages.success(request, f'{product.name} added to cart')
-
-    try:
-        from_email = settings.EMAIL_HOST_USER
-        to_email = request.user.email
-        
-        if not to_email:
-            logger.warning(f"Користувач {request.user.username} не має email адреси")
-        elif not from_email:
-            logger.warning("EMAIL_HOST_USER не налаштований")
-        else:
-            message = f'Ви додали товар "{product.name}" в кошик.\n\nЦіна: {product.unit_price} / {product.get_unit_display()}\nКількість: {cart_item.quantity}'
-            send_mail(
-                "Товар додано в кошик",
-                message,
-                from_email,
-                [to_email],
-                fail_silently=False, 
-            )
-            logger.info(f"Email спроба для користувача {request.user.email}")
-    except Exception as e:
-        logger.error(f"Помилка при відправці email: {str(e)}", exc_info=True)
     
     return redirect('inventory:products')
 
